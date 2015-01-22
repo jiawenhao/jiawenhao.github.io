@@ -39,7 +39,7 @@
 
                 <article>
                     <h1>HotCRP Beamer Generator</h1>
-                    <p><em>Dowload the code <a href="hotcrp-beamer.tar.gz">here</a> and try it on your own HotCRP site. Read on for some background and detailed instructions.</em></p>
+                    <p><em>Download the code <a href="hotcrp-beamer.tar.gz">here</a> and try it on your own HotCRP site. Read on for some background and detailed instructions.</em></p>
                     <h2>Introduction</h2>
                     <p><a href="http://read.seas.harvard.edu/~kohler/hotcrp/">HotCRP</a> is a commonly used software package for setting up and managing peer reviewed academic conference websites. It is maintained by <a href="http://read.seas.harvard.edu/~kohler/">Professor Eddie Kohler</a>.</p>
                     <p>In 2013, while serving as the submission co-chair for the 40th International Symposium on Computer Architecture (<a href="http://isca2013.eew.technion.ac.il/">ISCA 2013</a>), I wrote a few scripts to automatically generate slides from HotCRP webpages for the program committee (PC) meeting. These slides contain conflict-of-interest information. In particular, each paper submission generates two slides. The first slide lists PC members who conflict with the upcoming paper under discussion (and should thus leave the meeting room), and (after the conflicted PC members have left) the second slide shows various statistics of the paper submission. An example of the slides can be found <a href="hotcrp-beamer.pdf">here</a>. They are made using Latex's <a href="http://en.wikipedia.org/wiki/Beamer_(LaTeX)">Beamer</a> class.</p>
@@ -77,7 +77,7 @@
                             <blockquote><code>cd beamer; pdflatex beamer.tex; pdflatex beamer.tex</code></blockquote>
                             CAUTION: If the Beamer file fails to compile, it might be due to the limited character set Latex supports. If so, add rules to the <code>escape()</code> function in <code>beamer.py</code> to escape non-ASCII HTML characters.</li>
                     </ol>
-                    <p>It is worth knowing that the <code>beamer.py</code> script caches parsing results in a <code>beamer.pickle</code> file. Deleting that file would force the script to automatically re-parse all HTML files in the <code>papers</code> folder. However, if you are ever in a situation in which you need to re-generate the Beamer file, <em>the safest way to ensure up-to-date results is probably by running <code>make clean</code> to remove all intermediate files</em>. This will delete every non-script file and reset the directory to a prestine state with the exception of the manually saved <code>papers.html</code> and <code>users.html</code> files.</p>
+                    <p>It is worth knowing that the <code>beamer.py</code> script caches parsing results in a <code>beamer.pickle</code> file. Deleting that file would force the script to automatically re-parse all HTML files in the <code>papers</code> folder. However, if you are ever in a situation in which you need to re-generate the Beamer file, <em>the safest way to ensure up-to-date results is probably by running <code>make clean</code> to remove all intermediate files</em>. This will delete every non-script file and reset the directory to a pristine state with the exception of the manually saved <code>papers.html</code> and <code>users.html</code> files.</p>
 
                     <h2>Final Output</h2>
                     <p>The main output is a Latex Beamer source file. There are also a few useful CSV files.</p>
@@ -88,7 +88,7 @@
                         <li><code>authors.csv</code>: For each paper, the complete author information including full names and affiliations.</li>
                     </ul>
                     
-                    <h3>Acknowledgements</h3>
+                    <h3>Acknowledgments</h3>
                     <p>I learned some neat shell scripting tricks from my colleague, Yavuz Yetim, in the process of making these scripts and I appreciate his help. I wold also like to thank my advisor, <a href="http://www.princeton.edu/~mrm/">Professor Margaret Martonosi</a>, for giving me the opportunity to contribute to the organization of an academic conference. Finally, much kudos to Professor Eddie Kohler for having made HotCRP such great open-source software!</p>
                     
                     <p><em>This article was last updated on 2/12/2014.</em></p>
