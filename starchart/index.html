@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><![endif]-->
+        <title>Starchart | Wenhao Jia | Qualcomm Research</title>
+        <meta name="description" content="The Starchart tool release page">
+        <meta name="author" content="Wenhao Jia">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="../css/normalize.min.css">
+        <link rel="stylesheet" href="../css/main.css">
+
+        <script src="../js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div class="header-container">
+            <header class="wrapper clearfix">
+                <h1 class="title">Wenhao Jia</h1>
+                <nav>
+                    <ul>
+                        <li><a href="../index.html">About</a></li>
+                        <li><a href="../wjia.pdf">Resume</a></li>
+                        <li><a href="../#downloads">Downloads</a></li>
+                    </ul>
+                </nav>
+            </header>
+        </div>
+
+        <div class="main-container">
+            <div class="main wrapper clearfix">
+
+                <article>
+                    <h1>Starchart</h1>
+                        <h2 class="subtitle">Statistical Tuning via Automatically- and Recursively-Constructed, Hierarchically-Applied Regression Trees</h2>
+                        <h2>Overview</h2>
+                            <p>Starchart is a regression tree-based GPU hardware/software optimization tool. It can be used to explore the hardware/software design space of a parameterized GPU program. The regression tree theory is used to guide the design and implementation of Starchart. As a result, Starchart outputs a recursively partitioned design space represented in a tree format. Program design parameter significance and interaction are considered to guide the partitioning process.</p>
+                            <p>Please read the <a href="../starchart.pdf">Starchart paper</a> to understand how it works. Even though the paper was written using GPU programs as examples, Starchart as a tool and the ideas behind it may be applicable to a wider range of platforms and architectures.</p>
+                            <p><em>If you use our code or results in your project, please cite our Starchart paper below.</em></p>
+                            <blockquote class="citation"><p>Starchart: Hardware and Software Optimization Using Recursive Partitioning Regression Trees<br>Wenhao Jia, Kelly A. Shaw, Margaret Martonosi<br>Proceedings of the 22nd International Conference on Parallel Architectures and Compilation Techniques (PACT '13)</p></blockquote>
+                        <h2>Download</h2>
+                        <p>The GitHub repository for Starchart is located <a href="https://github.com/jiawenhao/Starchart">here.</a></p>
+                        <p>You can either go to the repository page and click Download ZIP on the right, or use the following command to clone a copy to your local disk.</p>
+                        <blockquote class="snippets"><p><code>git clone https://github.com/jiawenhao/Starchart.git</code></p></blockquote>
+                        <p>In the downloaded archive, only <code>starchart_1.0.tar.gz</code> will be used for this tutorial. The other files are provided in case you want to modify Starchart's source code.</p>
+                        <h2>Usage</h2>
+                            <p>The following tutorial walks through the process of applying Starchart to one of the examples in the original Starchart paper. By the end of the tutorial, you will learn how to load, run, and view the output of Starchart for your own applications you need to tune.</p>
+                            <h3>Preparation</h3>
+                                <p>If you haven't yet, please go and read the <a href="../starchart.pdf">Starchart paper</a>. This will make a lot of the concepts below easier to understand.</p>
+                                <p>Starchart is written in <a href="http://www.r-project.org">R</a>, so some experience with the R language and software environment would be helpful. A common recommendation for learning R is to read this <a href="http://cran.r-project.org/doc/manuals/R-intro.html">introductory document</a>. However, R is a very high-level language that is fairly self-explanatory, and we definitely don't use most of its features. Therefore, if you don't need to modify Starchart's source code and just want to use it, very minimal knowledge about is R is needed. To help with that, I will try to explain the commands we use in the rest of the tutorial.</p>
+                                <p>Download and install R from its <a href="http://cran.r-project.org/mirrors.html">official website</a> or with whatever package manager your operating system supports. Before we launch R, let's first make sure Starchart is properly installed. This will be done outside of R.</p>
+                                <p>Pick a current work directory to put all your data and R scripts, such as <code>~/R</code>. Put the downloaded Starchart package (<code>starchart_1.0.tar.gz</code>) in that directory. Open a terminal window and <code>cd</code> to the work directory. Run this command to install Starchart as a system (or personal) library:</p>
+                                <blockquote class="snippets"><p><code>R CMD INSTALL starchart_1.0.tar.gz</code></p></blockquote>
+                                <p>If you ever want to delete Starchart from the system (or personal) library path, use this command outside of R and in a terminal window: </p>
+                                <blockquote class="snippets"><p><code>R CMD REMOVE starchart</code></p></blockquote>
+                                <p>Now, make sure you have Starchart installed, and you can launch R by typing <code>R</code> (a single capitalized letter!) into the terminal window and pressing Enter. A <code>&gt;</code> sign will appear for you to input interactive R commands. Type <code>getwd()</code> (with the parentheses!) and Enter to see the current work directory. If you haven't changed work directory outside of R, it should show the same work directory. For the rest of the tutorial, I will assume the current work directory is <code>~/R</code>. To quite R, execute <code>quit()</code>.</p>
+                                <blockquote class="tips"><p>Type <code>?</code> followed by a command name (e.g. <code>?getwd</code>) in R to get help on that command. In fact, you can use <code>?</code> to get help on any R keyword (e.g. <code>?NaN</code>), not just commands. Make good use of it!</p></blockquote>
+                            <h3>Constructing a Starchart Tree</h3>
+                                <p>Load the package with the following R command:</p>
+                                <blockquote class="snippets"><p><code>library(starchart)</code></p></blockquote>
+                                <p>As part of the package, the main Starchart function&mdash;<code>starchart(&hellip;)</code>&mdash;will be loaded into memory. The package also ships with an example data set&mdash;<code>kmeans</code>&mdash;which can be loaded with this command:
+                                <blockquote class="snippets"><p><code>data("kmeans")</code></p></blockquote>
+                                <p>Take a look at the example data with the following command:</p>
+                                <blockquote class="snippets"><p><code>print(kmeans)</code></p></blockquote>
+                                <p>This <a href="http://stat.ethz.ch/R-manual/R-devel/library/base/html/data.frame.html">data frame</a> contains 500 rows and 5 columns (not counting the sequential ID column). The first few rows are shown below.</p>
+                                <table>
+                                    <tr>
+                                        <td></td>
+                                        <td><code>ppb</code></td>
+                                        <td><code>tpp</code></td>
+                                        <td><code>consec</code></td>
+                                        <td><code>runtime</code></td>
+                                        <td><code>wattage</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>1</code></td>
+                                        <td><code>13</code></td>
+                                        <td><code>13</code></td>
+                                        <td><code>1</code></td>
+                                        <td><code>0.0983674</code></td>
+                                        <td><code>206.5</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>2</code></td>
+                                        <td><code>16</code></td>
+                                        <td><code>11</code></td>
+                                        <td><code>1</code></td>
+                                        <td><code>0.1191526</code></td>
+                                        <td><code>201.2</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>3</code></td>
+                                        <td><code>14</code></td>
+                                        <td><code>12</code></td>
+                                        <td><code>0</code></td>
+                                        <td><code>0.1173948</code></td>
+                                        <td><code>209.2</code></td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>&hellip;</code></td>
+                                        <td><code>&hellip;</code></td>
+                                        <td><code>&hellip;</code></td>
+                                        <td><code>&hellip;</code></td>
+                                        <td><code>&hellip;</code></td>
+                                        <td><code>&hellip;</code></td>
+                                    </tr>
+                                </table>
+                                <p>Each row represents a particular implementation (i.e. a sample or sampled design) of the <code>swap</code> kernel from the Kmeans program in the <a href="https://www.cs.virginia.edu/~skadron/wiki/rodinia/index.php/Main_Page">Rodinia benchmark suite</a>. The first 3 columns are program design parameters, which take randomized values, and the last 2 columns are the measure performance (in seconds) and power usage (in watts) of each corresponding program instance. The explanations of the columns are listed below.</p>
+                                <blockquote>
+                                    <dl>
+                                        <dt><code>ppb</code></dt>
+                                        <dd>The number of points processed by each thread block (points-per-block).</dd>
+                                        <dt><code>tpp</code></dt>
+                                        <dd>The number of threads threads processing each point (threads-per-point).</dd>
+                                        <dt><code>consec</code></dt>
+                                        <dd>Whether cooperating threads should access point dimensions consecutively.</dd>
+                                        <dt><code>runtime</code></dt>
+                                        <dd>The measured runtime of this particular kernel instance.</dd>
+                                        <dt><code>wattage</code></dt>
+                                        <dd>The measured whole-system power usage of this particular kernel instance.</dd>
+                                    </dl>
+                                </blockquote>
+                                <p>Section II of the Starchart paper has more detailed description this kernel and its design parameters. Take a look at these 500 rows and try for yourself whether you can spot which design parameters have the highest influence on performance or power of this kernel. It's really difficult to see any trend without proper tools, isn't it? This is where Starchart comes into play.</p>
+                                <p>Let's say we want to know how the performance (i.e. runtime) of the <code>swap</code> kernel from the Kmeans program is determined by the 3 program design parameters. We just need to construct a Starchart tree with the following command:</p>
+                                <blockquote class="snippets"><p><code>tree = starchart(kmeans[1:200, 1:3], kmeans[1:200, 4])</code></p></blockquote>
+                                <p>This should take only a few seconds. What this command does is it tells Starchart to use the first 3 columns (i.e. the 3 design parameters) of the first 200 samples to predict the 4th column (i.e. the runtime) of the same 200 samples.</p>
+                                <blockquote class="tips"><p>In R, a data frame (such as the <code>kmeans</code> variable we use here) can be thought of as a two-dimensional table of data. We can use brackets to select a subset of its rows and columns in this form: <code>[first_row(:last_row), first_column(:last_column)]</code>. The parentheses mark optional parts and shouldn't be typed out.</p></blockquote>
+                                <p>More generally, a Starchart tree can be constructed using this command:</p>
+                                <blockquote class="snippets"><p><code>starchart(x, y)</code></p></blockquote>
+                                <p>Consistent with R naming conventions, <code>x</code> is a data frame containing predictor variables (also called independent variables), and <code>y</code> is a vector containing response variables (also called dependent variables). The number of rows in <code>x</code> must match the number of elements in <code>y</code>, representing individual samples (i.e. specific program instances). <code>x</code> can have one or more columns, corresponding to program design parameters, and <code>y</code> must be one-dimensional.</p>
+                            <h3>Examining a Starchart Tree</h3>
+                            <p>Now that we have a Starchart tree, we can view a summary of this tree:</p>
+                            <blockquote class="snippets"><p><code>summary(tree)</code></p></blockquote>
+                            <p>R should show a simple summary of the queried tree:</p>
+                            <blockquote class="snippets"><p><code>Call: starchart.default(x = kmeans[&hellip;], y = kmeans[&hellip;])
+Number of nodes: 67
+Number of leaf nodes: 34</code></p></blockquote>
+                            <p>We can also see the complete tree structure by running this command:</p>
+                            <blockquote class="snippets"><p><code>print(tree)</code></p></blockquote>
+                            <p>The output should look like this:</p>
+                            <blockquote class="snippets"><p><code>Printing a Starchart tree, one node per row:
+   splitParameter splitThreshold leftChild rightChild
+1             tpp              1         2          3
+2             ppb            129         4          5
+3             tpp              2         6          7
+&hellip;              &hellip;               &hellip;         &hellip;          &hellip;</code></p></blockquote>
+                            <p>This is a little tricky to read. Because R doesn't have native support for pointers and structures, a Starchart is internally represented as several vectors (i.e. columns in the output above) that mimics a tree data structure. A tree always starts with the root node on the first row. In the output above, the root node splits all 200 samples based on their <code>tpp</code> values (row 1 of <code>splitParameter</code>): those samples that have <code>tpp</code> values less than or equal to 1 (row 1 of <code>splitThreshold</code>) belong to the left child node, and those samples that have <code>tpp</code> values greater than 1 belong to the right child node. Meanwhile, the root node's left child node is described by the 2nd row (row 1 of <code>leftChild</code>), and its right child node is described by the 3rd row (row 1 of <code>leftChild</code>). Reading the 2nd and the 3rd of the output above, we can continue to interprete the tree structure.</p>
+                            <p>Clearly, this is not the easiest way to read a tree, but it does give the most complete information about a tree should one read it slowly and patiently enough.</p>
+                            <p>In fact, we can examine the tree in a much easier and more visual way:</p>
+                            <blockquote class="snippets"><p><code>plot(tree)</code></p></blockquote>
+                            <p>A window will pop up that shows an overview of the whole tree:</p>
+                            <div class="gallery crop"><img src="img/kmeans-full.png" width="500" alt="An overview of a Starchart tree."></div>
+                            <p>In the visualization, splits are shown as internal tree nodes. Leaf nodes represent final design space partitions. They are shown in the form <code>N [mean]</code>, where <code>N</code> is the number of samples in that design partition (subspace) and <code>mean</code> is the average response (or runtime in our case) of all samples in that partition.</p>
+                            <p>Trying to show all tree nodes in the same graph may look a little crowded, and thus we can choose to show only the top 5 splits (nodes) with this command:</p>
+                            <blockquote class="snippets"><p><code>plot(tree, top.splits = 5)</code></p></blockquote>
+                            <p>The resulting tree looks a lot bigger and easier to read. However, note that this mini tree has the same structure as the top 5 nodes in the previous full graph.</p>
+                            <div class="gallery crop"><img src="img/kmeans-5.png" width="500" alt="The top 5 nodes of a Starchart tree."></div>
+                            <p>Finally, with the additional white space, we can also plot split conditions on each edge:</p>
+                            <blockquote class="snippets"><p><code>plot(tree, top.splits = 5, edge.labels = TRUE)</code></p></blockquote>
+                            <p>This results in a tree with even more information:</p>
+                            <div class="gallery crop"><img src="img/kmeans-5-labels.png" width="500" alt="The top 5 nodes of a Starchart tree with edge labels."></div>
+                            <p>For example, we can easily see that a <code>tpp</code> value of 1 results in the worst (longest) runtime and a <code>tpp</code> value greater than 8 results in the best runtime.</p>
+                            <blockquote class="tips"><p>It may not be immediately obvious, but the height of a node in a Starchart corresponds to the significance of the split this node represents. Specifically, the higher a node is in the tree, the more sum-of-squared-error reduction it contributes in the tree building process. Refer to Figure 3 in the Starchart paper for more details.</p></blockquote>
+                            <h3>Using a Starchart Tree</h3>
+                            <p>A Starchart tree summarizes the high-level, subspace-dependent performance/power trend of a program's design space in a nice and easy-to-visualize way, and it can be used in many ways to directly answer many design questions when these questions are well formulated as proper design parameters. However, the most straightforward way of using a Starchart is simply using it to predict the performance/power of a number of unknown designs.</p>
+                            <p>For example, let's use this command to predict the performance of the 201st to 250th samples in the <code>kmeans</code> data set:</p>
+                            <blockquote class="snippets"><p><code>estimates = predict(tree, kmeans[201:250, 1:3])</code></p></blockquote>
+                            <p>Now plot the predicted runtimes and the actual runtimes on the same figure with this command (just copy and paste it):</p>
+                            <blockquote class="snippets"><p><code>barplot(t(data.frame(estimates, kmeans[201:250, 4])), 
+        beside = TRUE, 
+        legend.text = c("predicted", "actual"), 
+        xaxt = "n", ylab = "Runtime (s)")</code></p></blockquote>
+                            <p>This is the result:</p>
+                            <div class="gallery"><img src="img/kmeans-predictions.png" width="500" alt="Predicting the performance of 50 unknown designs."></div>
+                            <p>Note that when making a prediction, Starchart does not have any access to the actual runtime of a sample. Compare these two groups of bars, the predictions are quite accurate, aren't they?</p>
+                            <h3>Try Starchart on Your Own Data!</h3>
+                            <p>Since you've learned how to use Starchart on one of the paper examples, it's time to try it on your own data. Note that Starchart doesn't have to be applied to only GPU tuning problems: nothing in its design prevents it from being used on a wider range of programs, architectures, and measurements.</p>
+                            <p>The hardest part about using Starchart may be acquiring your own data to analyze. After all, running and collecting results from hundreds of runs could be very tedious. Thus, I'm offering my own research scripts as an example for how you might write your own scripts to automate these experiments. Download the code <a href="roofline.tar.gz">here</a>, and take a look at its README file. This file is a small part of one of my current research projects. It is NOT a part of Starchart and is not as well maintained/commented. If you happen to have a current generation NVIDIA GPU to execute the OpenCL microbenchmark in the archive, you can try running the commands listed in README. Otherwise, use it as an example to jump start your own automation scripts for your own performance/power/other design space exploration experiments!</p>
+                        <h2>Final Words</h2>
+                            <p>Thank you for following the tutorial through to this point. If you find any bugs or have any comments for making the Starchart code or tutorial better, please don't hesitate to contact me using the links on the right of this page.</p>
+                            <p>If you are familiar with R, please consider reading the Starchart source code yourself. There are a few convenient features that aren't mentioned in this tutorial but may potentially ease your own use of Starchart!</p>
+                            <p><em>This article was last updated on 2/23/2014.</em></p>
+                </article>
+
+                <aside class="clearfix">
+                    <div class="portrait">
+                        <img src="../img/wjia.jpg" width="200" alt="This is a picture of me.">
+                    </div>
+                    <div class="contact">
+                        <h3>Contact Me</h3>
+                        <p>Mailing address: <br>3165 Kifer Rd, <br>Santa Clara, CA&nbsp;95051</p>
+                        <p>E-mail address: <br><a href="mailto:wjia@qualcomm.com">wjia@qualcomm.com</a></p>
+                    </div>
+                </aside>
+
+            </div> <!-- #main -->
+        </div> <!-- #main-container -->
+
+        <div class="footer-container">
+            <footer class="wrapper">
+                <h3>Designed responsively using <a href="http://html5boilerplate.com/">H5BP</a> <a href="http://www.initializr.com/">Initializr</a><br>Last updated in January 2014</h3>
+            </footer>
+        </div>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="../js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+
+        <script src="../js/main.js"></script>
+
+        <script>
+            var _gaq=[['_setAccount','UA-8144197-1'],['_trackPageview']];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src='//www.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+        </script>
+    </body>
+</html>

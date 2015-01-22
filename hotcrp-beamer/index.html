@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><![endif]-->
+        <title>HotCRP Beamer Generator | Wenhao Jia | Qualcomm Research</title>
+        <meta name="description" content="A tool to automatically generate conflict-of-interest slides from HotCRP pages">
+        <meta name="author" content="Wenhao Jia">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="../css/normalize.min.css">
+        <link rel="stylesheet" href="../css/main.css">
+
+        <script src="../js/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+        <![endif]-->
+
+        <div class="header-container">
+            <header class="wrapper clearfix">
+                <h1 class="title">Wenhao Jia</h1>
+                <nav>
+                    <ul>
+                        <li><a href="../index.html">About</a></li>
+                        <li><a href="../wjia.pdf">Resume</a></li>
+                        <li><a href="../#downloads">Downloads</a></li>
+                    </ul>
+                </nav>
+            </header>
+        </div>
+
+        <div class="main-container">
+            <div class="main wrapper clearfix">
+
+                <article>
+                    <h1>HotCRP Beamer Generator</h1>
+                    <p><em>Dowload the code <a href="hotcrp-beamer.tar.gz">here</a> and try it on your own HotCRP site. Read on for some background and detailed instructions.</em></p>
+                    <h2>Introduction</h2>
+                    <p><a href="http://read.seas.harvard.edu/~kohler/hotcrp/">HotCRP</a> is a commonly used software package for setting up and managing peer reviewed academic conference websites. It is maintained by <a href="http://read.seas.harvard.edu/~kohler/">Professor Eddie Kohler</a>.</p>
+                    <p>In 2013, while serving as the submission co-chair for the 40th International Symposium on Computer Architecture (<a href="http://isca2013.eew.technion.ac.il/">ISCA 2013</a>), I wrote a few scripts to automatically generate slides from HotCRP webpages for the program committee (PC) meeting. These slides contain conflict-of-interest information. In particular, each paper submission generates two slides. The first slide lists PC members who conflict with the upcoming paper under discussion (and should thus leave the meeting room), and (after the conflicted PC members have left) the second slide shows various statistics of the paper submission. An example of the slides can be found <a href="hotcrp-beamer.pdf">here</a>. They are made using Latex's <a href="http://en.wikipedia.org/wiki/Beamer_(LaTeX)">Beamer</a> class.</p>
+                    <p>In response to popular demands, I'm releasing the scripts and the corresponding directions below. These scripts have been tested to work with HotCRP v2.52. However, they are actually quite fragile because they rely a lot on some arbitrary HotCRP HTML file structures. If a future HotCRP release breaks the compatibility, please <a href="mailto:wjia@qualcomm.com">drop me a line</a> and I'll try to fix it.</p>
+                    <p>The steps below may look daunting, but they are actually quite easy to follow. In particular, the most time-consuming part is actually the preparatory steps.</p>
+                    <p><em>NOTE: I forgo all copyrights of the code. You are free to make any modifications to the code and/or use it in your own projects. However, I would appreciate your mentioning my name or this webpage if you use the code in a conference PC meeting. Thank you!</em><p>
+                    <h2>Preparatory Steps</h2>
+                    <ol>
+                        <li><a href="hotcrp-beamer.tar.gz">Download the code</a> and extract the content into a work directory. For this tutorial, the directory is named <code>isca40</code>.
+                        <li>In your web browser, log in to the HotCRP website as an administrator. On the main page, use the search bar to list all needed papers (e.g. all <em>Submitted Papers</em>). Click the subsequent table column headers to sort papers into the display order you want in the generated slides (e.g. by decreasing <em>Overall Metric</em>). Save that web page as <code>papers.html</code> into the <code>isca40</code> folder. Just saving the page source is fine; there is no need for images or scripts.</li>
+                        <li>In your web browser, log in to the HotCRP website as an administrator. On the main page, click <em>Users</em> in the right-hand side <em>Administration</em> toolbox. Save that web page as <code>users.html</code> into the <code>isca40</code> folder. Just saving the page source is fine; there is no need for images or scripts.</li>
+                        <li>Make some custom configuration if needed.</li>
+                        <ol>
+                            <li>(Required) Open <code>makefile</code> and replace <code>isca40.cs.princeton.edu</code> with your HotCRP website address at the beginning of the file.</li>
+                            <li>(Optional) Sometimes, PC members submit papers that are registered under their non-primary HotCRP accounts. The automated scripts may then fail to recognize the conflict-of-interest. If this happens, open <code>pc.py</code> and change the first variable definition to manually add these exceptions.</li>
+                            <li>(Optional) If some PC members are absent from a PC meeting and cannot lead discussions, add their names to the beginning of <code>beamer.py</code>. The script will pick a different discussion leader for relevant papers.</li>
+                            <li>(Optional) Normally, the PC member reviewer who gives the highest score to a paper is chosen as the discussion lead. However, if for some papers certain PC members must be hard-coded to lead the discussions, add those rules to the beginning of <code>beamer.py</code>.</li>
+                        </ol>
+                    </ol>
+
+                    <h2>Main Steps</h2>
+                    <p>The steps below have been tested under OS X and Ubuntu. They assume some minimal proficiency with command line tools.</p>
+                    <ol>
+                        <li>In a command line window, go to the work directory (<code>isca40</code> for this tutorial) and execute the following command.
+                        <blockquote><code>make</code></blockquote>
+                        That's all you need to do to get the final Beamer file, except for some interactive questions if this is the first time you invoke this command. Read on to find out what the command does.
+                        <ol>
+                            <li>It invokes <code>id.py</code> to make a list of paper IDs from <code>papers.html</code>.</li>
+                            <li>You may then be asked for a HotCRP website <em>administrator's</em> login email and password. This information is used by <code>cookies.sh</code> to save the login cookies for later use. Don't worry, your password is discarded immediately after use and is not saved to the disk.</li>
+                            <li>It executes <code>papers.sh</code> to download every paper's information. This may take a few minutes. Very rarely, due to poor network connections, the crawler may hang forever on a particular paper, e.g. <code>papers/i.html</code>. If this happens, break out of the script with Ctrl + C, delete the partially downloaded <code>papers/i.html</code>, and rerun the make command above. The crawler will resume from <code>papers/i.html</code> onward.</li>
+                            <li>The Python script <code>pc.py</code> is executed to parse <code>users.html</code> and generate a list of PC members and papers authored by them in <code>pc.csv</code>. You can open or print this file with Excel to track PC conflicts during a PC meeting.</li>
+                            <li>The Python script <code>beamer.py</code> is invoked to generate the final Beamer file (<code>beamer/beamer.tex</code>), a <code>papers.csv</code> file (a sort of reverse index of <code>pc.csv</code>), and a <code>authors.csv</code> file (a list of every paper's full author information). Like <code>pc.csv</code>, <code>papers.csv</code> and <code>authors.csv</code> can be used during a PC meeting for tracking purposes.</li>
+                        </ol>
+                        <li>Open the generated Beamer file, <code>beamer/beamer.tex</code>, and make whatever custom changes you want. When all is done, compile the Beamer file with the following command.
+                            <blockquote><code>cd beamer; pdflatex beamer.tex; pdflatex beamer.tex</code></blockquote>
+                            CAUTION: If the Beamer file fails to compile, it might be due to the limited character set Latex supports. If so, add rules to the <code>escape()</code> function in <code>beamer.py</code> to escape non-ASCII HTML characters.</li>
+                    </ol>
+                    <p>It is worth knowing that the <code>beamer.py</code> script caches parsing results in a <code>beamer.pickle</code> file. Deleting that file would force the script to automatically re-parse all HTML files in the <code>papers</code> folder. However, if you are ever in a situation in which you need to re-generate the Beamer file, <em>the safest way to ensure up-to-date results is probably by running <code>make clean</code> to remove all intermediate files</em>. This will delete every non-script file and reset the directory to a prestine state with the exception of the manually saved <code>papers.html</code> and <code>users.html</code> files.</p>
+
+                    <h2>Final Output</h2>
+                    <p>The main output is a Latex Beamer source file. There are also a few useful CSV files.</p>
+                    <ul>
+                        <li><code>beamer/beamer.tex</code>: Use Latex to compile this file to get the final slides.</li>
+                        <li><code>pc.csv</code>: A list of PC members and IDs of the papers they have authored.</li>
+                        <li><code>papers.csv</code>: A list of all papers and the number of PC member authors.</li>
+                        <li><code>authors.csv</code>: For each paper, the complete author information including full names and affiliations.</li>
+                    </ul>
+                    
+                    <h3>Acknowledgements</h3>
+                    <p>I learned some neat shell scripting tricks from my colleague, Yavuz Yetim, in the process of making these scripts and I appreciate his help. I wold also like to thank my advisor, <a href="http://www.princeton.edu/~mrm/">Professor Margaret Martonosi</a>, for giving me the opportunity to contribute to the organization of an academic conference. Finally, much kudos to Professor Eddie Kohler for having made HotCRP such great open-source software!</p>
+                    
+                    <p><em>This article was last updated on 2/12/2014.</em></p>
+
+                </article>
+
+                <aside class="clearfix">
+                    <div class="portrait">
+                        <img src="../img/wjia.jpg" width="200" alt="This is a picture of me.">
+                    </div>
+                    <div class="contact">
+                        <h3>Contact Me</h3>
+                        <p>Mailing address: <br>3165 Kifer Rd, <br>Santa Clara, CA&nbsp;95051</p>
+                        <p>E-mail address: <br><a href="mailto:wjia@qualcomm.com">wjia@qualcomm.com</a></p>
+                    </div>
+                </aside>
+
+            </div> <!-- #main -->
+        </div> <!-- #main-container -->
+
+        <div class="footer-container">
+            <footer class="wrapper">
+                <h3>Designed responsively using <a href="http://html5boilerplate.com/">H5BP</a> <a href="http://www.initializr.com/">Initializr</a><br>Last updated in January 2014</h3>
+            </footer>
+        </div>
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+        <script>window.jQuery || document.write('<script src="../js/vendor/jquery-1.10.1.min.js"><\/script>')</script>
+
+        <script src="../js/main.js"></script>
+
+        <script>
+            var _gaq=[['_setAccount','UA-8144197-1'],['_trackPageview']];
+            (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+            g.src='//www.google-analytics.com/ga.js';
+            s.parentNode.insertBefore(g,s)}(document,'script'));
+        </script>
+    </body>
+</html>

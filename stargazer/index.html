@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Stargazer | Wenhao Jia | Qualcomm Research</title>
+    <meta name="description" content = "The release website of the Stargazer tool">
+    <meta name="keywords" content="Stargazer, Wenhao Jia, Princeton, GPU, Computer Architecture">
+    <meta name="author" content="Wenhao Jia">
+    <link rel="stylesheet" href="../default.css">
+    <link rel="stylesheet" media="print" href="../print.css">
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-8144197-1']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>
+  </head>
+  <body>
+    <h1>Stargazer: <span class="under">STA</span>tistical <span class="under">R</span>egression-Based <span class="under">G</span>PU <span class="under">A</span>rchitecture Analy<span class="under">ZER</span></h1>
+    <h2>Overview</h2>
+    <p>Stargazer is a regression-based <em>GPU design space exploration</em> tool. It can be used to efficiently survey extremely large hardware and software design spaces of modern GPUs. At a high-level, Stargazer completes its tasks through the following steps.</p>
+    <ol>
+      <li>The user specifies a design space composed of a large number of design parameters (e.g. SIMD width, memory bandwidth, register file size, etc.) and their value ranges. In addition, the user also specifies a measuarable quantity which is the optimization target (e.g. runtime, power consumption, chip area, etc.) as well as how to measure the quantity (e.g. simulators, real-system measurement, table look-ups, etc.). Stargazer sparsely and randomly samples the space. For each sampled design, the measurement procedure is invoked to gather execution results of the target quantity for that particular design.</li>
+      <li>Based on the gathered sampled designs, Stargazer uses a stepwise method to automatically build a regression model which establishes a relationship between the design parameters and the target quantity. The resulting model is simple, accurate, considers parameter interactions, and is applicable to all of the designs (sampled and unseen) in the space.</li>
+      <li>The user specifies any arbitrary, potentially unseen designs in the space, and Stargazer uses the regression model to predict the execution results of these designs. Because no additional simulation or measurement is needed, the user can explore the design space efficiently.</li>
+    </ol>
+    <p>Because Stargazer uses a stepwise method to automatically and reliably prune down the number of useful parameters, the resulting regression model is very compact and easy to understand. Meanwhile, only a very small sample set (compared to the size of the entire design space) is needed to achieve fairly good prediction accuracy, which translates to orders of magnitude of time saved, relative to a fully exhaustive design space exploration. For more details of Stargazer, please refer to the following <a name="paper">publication</a>.</p>
+    <blockquote>Automated Regression-Based GPU Design Space Exploration <span class="noprint">[<a href="../stargazer.pdf" class="download" onClick="_gaq.push(['_trackEvent', 'Downloads', 'Publications', 'stargazer']);">pdf</a>]</span><br>
+    <em><strong>Wenhao Jia</strong>, Kelly A. Shaw, and Margaret Martonosi</em><br>
+    In Proceedings of the 2012 IEEE International Symposium on Performance Analysis of Systems and Software (ISPASS 2012)</blockquote>
+    <h2>Usage</h2>
+    <p>The core stepwise method of Stargazer is implemented as an R function. R is a free software environment for statistical computing and graphics (see <a href="http://www.r-project.org">The R Project website</a>). The R Project maintains a list of useful <a href="http://cran.r-project.org/manuals.html">documentation</a> for learning R. In particular, <a href="http://cran.r-project.org/doc/manuals/R-intro.html">An Introduction to R</a> is an execellent reference for first-time R users. </p>
+    <h3>Basic Use</h3>
+    <p>Once the release package is downloaded and decompressed, launch R in the extracted directory. The following <a name="example">sequence of R commands</a> invokes Stargazer to build and print a model for the example matrix multiply input (see <a href="#matrix">below</a>). In all examples on this page, "<code>&gt;</code>" represents an R terminal prompt. Users should input the command after "<code>&gt;</code>" and press the enter key.</p>
+    <blockquote class="snippet"><code>&gt; source("stargazer.R")<br>&gt; data = read.csv("matrix.csv")<br>&gt; model = stargazer(data)<br>&gt; print(model)<br>[1] "runtime ~ + ns(blk, knots = c(2, 4, 8)) + ns(simd, knots = c(32)) + ..."</code></blockquote>
+    <p>The output of Stargazer is a string containing the result model. It should look similar to the last line above, in which <code>ns</code> is the standard R notation for natural splines (type "<code>?ns</code>" in an R terminal to view its usage). To use the result, build the actual linear model and use any standard R prediction function to predict the results (runtime in this example) of a user-specified design.</p>
+    <blockquote class="snippet"><code>> attach(data)<br>> fit = lm(formula(model))<br>> predict(fit, data)</code></blockquote>
+    <p>In the example above, an R linear regression model is stored in <code>fit</code>, and it's used to predict the runtime of the original training samples. The difference between these predictions and the actual <code>runtime</code> column in <code>data</code> is the residual of the model. In actual use, users can specify any other values other than <code>data</code> to predict performance of others designs in the space.
+    <h3>Input Data</h3>
+    <p>The core stepwise regression method of Stargazer (the <code>stargazer</code> function above) does not deal with sampling and measurement&mdash;all it needs is an input CSV file that lists the design parameters and measured results of each sampled design. That is why the commands given <a href="#example">above</a> use an example input file <code>matrix.csv</code>. This file, inlcuded in the download package, is obtained from a <a name="matrix">matrix multiply</a> program simulated with GPGPU-Sim on a 933K-point design space (details in the <a href="#paper">paper</a>). The following graph shows a graphic representation of the content of this input file.</p>
+    <blockquote class="figure"><img alt="Contents of matrix.csv" src="matrix.png" height="237"></blockquote>
+    <p>Users of Stargazer can directly feed any input file with a similar layout to the stepwise method, no matter how the input was obtained&mdash;simulation or otherwise.
+    <h3>Additional Tools</h3>
+    <p>The Stargazer package also comes with other R and Python scripts for automating and/or facilitating various other parts of the workflow. For example, there are scripts that automatically modify parameters and launch GPGPU-Sim, collect simulation results and generate CSV files, run verification tests on a random set of designs to compute average and maximum prediction errors, etc. <em>For more information, please refer to the <code>README</code> document in the downloaded package.</em></p>
+    <h2>Download</h2>
+    <p>To download the complete source code of Stargazer, please visit its <a href="https://github.com/jiawenhao/Stargazer">GitHub repository</a>.</p>
+    <h2>Feedback</h2>
+    <p>For any questions or comments, please <a href="mailto:wjia@qualcomm.com">contact the authors</a>.</p>
+    <hr class="noprint">    
+    <div id="footer" class="noprint"><a href="..">Wenhao Jia</a> | <a href="../..">Princeton University</a> | March 2012</div>
+  </body>
+</html>
